@@ -12,4 +12,4 @@
 
 项目属于 extension / adaptation，不是从零原创全部代码。未宣称上游背书，也未将上游用户量、性能或商业成果算作本项目成果。
 
-Baseline reproduction: `git show 7ca63acf:src/data_cleaning.py` 可查看原文件，完整历史保留。原 README 可用 `git show 7ca63acf:README.md` 查看。
+Baseline reproduction：可在上游仓库的 `7ca63acf2d2719fc3ffa36a386ff7172e67a5251` 提交查看原文件。当前公开仓库采用直接发布的完整代码快照，并通过本文件保留固定来源记录。

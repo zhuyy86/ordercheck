@@ -1,6 +1,6 @@
 # OrderCheck · 订单批处理工作台
 
-基于 [Dataset Cleaner](https://github.com/Louce/dataset-cleaner-and-analyser-tools) 的 **MIT 开源二次开发项目**。新增可追溯的订单批量验收流程，由 Codex 辅助开发；原许可证与 Git 历史保留。
+基于 [Dataset Cleaner](https://github.com/Louce/dataset-cleaner-and-analyser-tools) 的 **MIT 开源二次开发项目**。新增可追溯的订单批量验收流程，由 Codex 辅助开发；原许可证和固定来源版本记录保留。
 
 ## 解决什么问题
 
@@ -110,7 +110,7 @@ outputs/                本机生成报告，Git 忽略
 .\.venv\Scripts\python.exe -m streamlit run src/app.py --server.address 127.0.0.1 --server.port 8502 --browser.gatherUsageStats false
 ~~~
 
-[UPSTREAM.md](UPSTREAM.md) 记录固定提交与作者。原版 README 和代码保存在 Git 历史中。本项目不声称上游所有代码为个人原创，也不复用上游任何商业或性能宣传作为自身成果。
+[UPSTREAM.md](UPSTREAM.md) 记录上游仓库和固定提交。当前 GitHub 仓库采用直接发布的完整代码快照，不是 Fork。本项目不声称上游代码为个人原创，也不复用上游任何商业或性能宣传作为自身成果。
 
 ## 测试与限制
 
