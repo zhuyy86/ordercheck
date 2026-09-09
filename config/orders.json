@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "aliases": {
+    "order_id": ["订单号", "订单编号", "Order ID"],
+    "store": ["门店", "店铺", "Store"],
+    "date": ["日期", "订单日期", "Order Date"],
+    "amount": ["金额", "订单金额", "Total"]
+  },
+  "required": ["order_id", "store", "date", "amount"],
+  "duplicate_key": ["store", "order_id"],
+  "date_formats": ["%Y-%m-%d", "%Y/%m/%d"],
+  "amount_min": "0",
+  "amount_max": "10000000"
+}
