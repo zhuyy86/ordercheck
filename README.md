@@ -126,3 +126,14 @@ outputs/                本机生成报告，Git 忽略
 ## License
 
 [MIT License](LICENSE)。原许可证声明保留，OrderCheck 新增部分同样按 MIT 提供。
+
+
+## 新增：业务 KPI 汇总
+
+在验收报告之外，可直接把 `accepted.csv` 转成适合汇报或二次分析的 JSON：
+
+```powershell
+python scripts/kpi_summary.py outputs/accepted.csv -o outputs/kpi.json
+```
+
+输出包括总订单数、有效金额行数、金额合计、平均客单价，以及按门店、日期汇总的订单数和金额。金额用 `Decimal` 计算，坏金额单独计入 `amount_error_rows`，不会静默混入合计。实现和说明见 [KPI_GUIDE.md](docs/KPI_GUIDE.md)。
