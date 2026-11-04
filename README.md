@@ -3,7 +3,7 @@
 
 A Python application that turns multi-source order files into a repeatable business validation workflow. It combines a Streamlit workbench, a command-line interface and a shared processing core.
 
-[中文使用文档](USAGE.md) · [Engineering walkthrough](PROJECT_EXPLAINED_FOR_ME.md) · [Test report](TEST_REPORT.md) · [Source & license](UPSTREAM.md)
+[Developer profile & résumé](https://github.com/zhuyy86/leadreview/blob/main/PROFILE.md) · [中文使用文档](USAGE.md) · [Engineering walkthrough](PROJECT_EXPLAINED_FOR_ME.md) · [Test report](TEST_REPORT.md) · [Source & license](UPSTREAM.md)
 
 ![OrderCheck workbench](docs/demo-overview.png)
 
