@@ -8,6 +8,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
+import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -20,14 +22,14 @@ def _money(value: Decimal) -> str:
 
 
 def _amount(row: dict[str, str]) -> Decimal | None:
-    raw = (row.get("amount") or "").strip().replace(",", "")
-    if not raw:
+    raw = (row.get("amount") or "").strip()
+    if not re.fullmatch(r"(?:[0-9]+|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.[0-9]{1,2})?", raw):
         return None
     try:
-        value = Decimal(raw)
+        value = Decimal(raw.replace(",", ""))
     except InvalidOperation:
         return None
-    return value if value >= 0 else None
+    return value if value.is_finite() and 0 <= value <= Decimal("1e12") else None
 
 
 def summarize(rows: Iterable[dict[str, str]], source: str = "accepted.csv") -> dict:
@@ -94,7 +96,18 @@ def summarize_csv(path: str | Path) -> dict:
     """Read an OrderCheck accepted CSV using BOM-tolerant UTF-8."""
     path = Path(path)
     with path.open(newline="", encoding="utf-8-sig") as handle:
-        return summarize(csv.DictReader(handle), path.name)
+        reader = csv.DictReader(handle, strict=True)
+        headers = reader.fieldnames or []
+        if not {"store", "date", "amount"}.issubset(headers) or len(headers) != len(set(headers)):
+            raise ValueError("CSV must have unique headers including store, date and amount.")
+
+        def rows():
+            for row in reader:
+                if None in row or any(value is None for value in row.values()):
+                    raise ValueError("CSV record column count does not match the header.")
+                yield row
+
+        return summarize(rows(), path.name)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -108,13 +121,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    result = summarize_csv(args.input)
-    payload = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(payload, encoding="utf-8")
-    else:
-        print(payload, end="")
+    try:
+        result = summarize_csv(args.input)
+        payload = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(payload, encoding="utf-8")
+        else:
+            print(payload, end="")
+    except (OSError, UnicodeError, ValueError, csv.Error) as exc:
+        print(f"OrderCheck KPI: {exc}", file=sys.stderr)
+        return 2
     return 0
 
 
