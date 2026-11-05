@@ -9,3 +9,5 @@ plotly==5.24.1
 xlsxwriter==3.2.0
 xlrd==2.0.1
 pytest==8.3.4
+# Arrow 26 requires NumPy 2; retain the verified NumPy 1.x stack.
+pyarrow==25.0.1
