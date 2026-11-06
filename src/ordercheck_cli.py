@@ -6,6 +6,7 @@ import sys
 
 from order_batch import MAX_FILES, MAX_BYTES, read_tables, run_batch, report_zip
 from order_demo import ROOT, demo_inputs
+from report_output import publish_report
 
 
 def main(argv=None):
@@ -35,9 +36,7 @@ def main(argv=None):
         tables = [table for name, content in inputs for table in read_tables(name, content)]
         result, manifest = run_batch(tables, config, mapping)
         payload = report_zip(result, manifest)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with args.output.open("xb") as handle:
-            handle.write(payload)
+        publish_report(args.output, payload)
         print(json.dumps(result.summary, ensure_ascii=True, indent=2))
         print(f"Report: {args.output.resolve()}")
         return 2 if result.summary["rejected_rows"] else 0

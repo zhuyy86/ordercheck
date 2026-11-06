@@ -20,7 +20,7 @@ CSV and Excel exports often disagree on field names, identifiers and values. Ord
 - **Data integrity:** Decimal-based monetary validation, text identifier preservation and whole-group isolation for conflicting duplicate keys.
 - **Traceability:** file, worksheet and row provenance; original field values; transformation logs; input SHA-256 hashes and replayable mappings.
 - **Review experience:** accepted records, exceptions and changes are separated; changed inputs invalidate stale reports.
-- **Delivery outputs:** seven-sheet Excel reports, CSV extracts, JSON summaries and a ZIP package. KPI reporting adds store/day totals and average order value.
+- **Delivery outputs:** seven-sheet Excel reports, CSV extracts, JSON summaries and a ZIP package. KPI reporting adds store/day totals and average order value. CLI ZIP reports are staged and file-synced before exclusive publication, preventing partial final reports and overwrites by competing writers.
 
 ## Architecture
 
@@ -38,7 +38,7 @@ The processing layers separate business decisions from file handling and present
 
 ## Verification
 
-The current suite passes **70 automated tests**, covering mixed inputs, multiple worksheets, dates, monetary values, duplicate conflicts, exports, UI and CLI behavior. Browser checks exercised upload, validation and download. See [TEST_REPORT.md](TEST_REPORT.md) for the recorded environment and results.
+The current suite passes **74 automated tests**, covering mixed inputs, multiple worksheets, dates, monetary values, duplicate conflicts, exports, UI and CLI behavior. Browser checks exercised upload, validation and download. See [TEST_REPORT.md](TEST_REPORT.md) for the recorded environment and results.
 
 ## Run locally
 
