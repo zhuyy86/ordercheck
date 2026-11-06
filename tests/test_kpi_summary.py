@@ -67,3 +67,64 @@ def test_cli_reads_bom_and_reports_missing_input_without_writing_output(tmp_path
     assert main([str(tmp_path / "missing.csv"), "-o", str(output)]) == 2
     assert output.read_bytes() == before
     assert "OrderCheck KPI:" in capsys.readouterr().err
+
+
+def test_sync_failure_preserves_old_json_and_allows_retry(tmp_path, monkeypatch, capsys):
+    from scripts import kpi_summary
+    source = tmp_path / 'accepted.csv'
+    source.write_text('store,date,amount\nA,2026-11-06,2.50\n', encoding='utf-8')
+    output = tmp_path / 'kpi.json'
+    output.write_bytes(b'previous complete report')
+    original_sync = kpi_summary.os.fsync
+
+    def fail_sync(fd):
+        assert output.read_bytes() == b'previous complete report'
+        raise OSError('simulated sync failure')
+
+    monkeypatch.setattr(kpi_summary.os, 'fsync', fail_sync)
+    assert main([str(source), '-o', str(output)]) == 2
+    assert output.read_bytes() == b'previous complete report'
+    assert not list(tmp_path.glob('.ordercheck-kpi-*'))
+    assert 'sync failure' in capsys.readouterr().err
+    monkeypatch.setattr(kpi_summary.os, 'fsync', original_sync)
+    assert main([str(source), '-o', str(output)]) == 0
+    assert json.loads(output.read_text())['summary']['total_amount'] == '2.50'
+
+
+def test_replace_failure_does_not_publish_partial_json(tmp_path, monkeypatch):
+    from scripts import kpi_summary
+    output = tmp_path / 'fresh.json'
+
+    def fail_replace(source, target):
+        assert json.loads(source.read_text(encoding='utf-8')) == {'complete': True}
+        assert not target.exists()
+        raise PermissionError('simulated rename failure')
+
+    monkeypatch.setattr(kpi_summary.os, 'replace', fail_replace)
+    with pytest.raises(PermissionError):
+        kpi_summary.write_summary(output, '{"complete":true}')
+    assert not list(tmp_path.iterdir())
+
+
+def test_kpi_rejects_input_as_output_and_hardlink_alias(tmp_path, capsys):
+    import os
+    source = tmp_path / 'accepted.csv'
+    original = 'store,date,amount\nA,2026-11-06,1.00\n'
+    source.write_text(original, encoding='utf-8')
+    alias = tmp_path / 'alias.csv'
+    os.link(source, alias)
+    for output in [source, alias]:
+        assert main([str(source), '-o', str(output)]) == 2
+        assert source.read_text(encoding='utf-8') == original
+    assert 'must not replace' in capsys.readouterr().err
+
+
+def test_concurrent_json_replacements_are_complete(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from scripts.kpi_summary import write_summary
+    output = tmp_path / 'kpi.json'
+    payloads = [json.dumps({'writer': x, 'data': x * 100000}) for x in ['A', 'B']]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        list(pool.map(lambda payload: write_summary(output, payload), payloads))
+    assert output.read_text(encoding='utf-8') in payloads
+    assert list(tmp_path.iterdir()) == [output]

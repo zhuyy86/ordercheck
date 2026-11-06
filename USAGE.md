@@ -119,7 +119,7 @@ outputs/                本机生成报告，Git 忽略
 .\.venv\Scripts\python.exe -m pip check
 ~~~
 
-74 项测试通过（见 TEST_REPORT.md），另有真实浏览器检查。核心覆盖混合格式、多工作表、前导零、金额与日期、重复冲突、坏文件、映射、导出和重复执行。浏览器测试是可选开发工具：安装 Node.js 的 playwright 包并准备 Edge，启动本地页面后运行 node scripts/browser_smoke.cjs。
+78 项测试通过（见 TEST_REPORT.md），另有真实浏览器检查。核心覆盖混合格式、多工作表、前导零、金额与日期、重复冲突、坏文件、映射、导出和重复执行。浏览器测试是可选开发工具：安装 Node.js 的 playwright 包并准备 Edge，启动本地页面后运行 node scripts/browser_smoke.cjs。
 
 首版是本地小批量验收工具，未做大规模性能压测；不支持旧 .xls、GBK 自动转码、宏、公式计算、跨币种汇总、账号系统和在线多人服务。没有商业客户、收入或真实用户数量。数据结果由人复核后再用于实际业务。
 
@@ -136,4 +136,4 @@ outputs/                本机生成报告，Git 忽略
 python scripts/kpi_summary.py outputs/accepted.csv -o outputs/kpi.json
 ```
 
-输出包括总订单数、有效金额行数、金额合计、平均客单价，以及按门店、日期汇总的订单数和金额。金额用 `Decimal` 计算，坏金额单独计入 `amount_error_rows`，不会静默混入合计。实现和说明见 [KPI_GUIDE.md](docs/KPI_GUIDE.md)。
+输出包括总订单数、有效金额行数、金额合计、平均客单价，以及按门店、日期汇总的订单数和金额。金额用 `Decimal` 计算，坏金额单独计入 `amount_error_rows`，不会静默混入合计。JSON 写入失败保留旧报告，完整暂存并同步后才替换最终文件；禁止输出覆盖输入 CSV。实现和说明见 [KPI_GUIDE.md](docs/KPI_GUIDE.md)。

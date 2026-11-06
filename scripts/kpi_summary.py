@@ -8,8 +8,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import re
 import sys
+import tempfile
 from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -110,6 +112,24 @@ def summarize_csv(path: str | Path) -> dict:
         return summarize(rows(), path.name)
 
 
+def write_summary(path: Path, payload: str) -> None:
+    """Replace the final name only after the complete UTF-8 file is synced."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
+                                         dir=path.parent, prefix=".ordercheck-kpi-",
+                                         delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Summarize accepted.csv into store/date KPIs."
@@ -122,11 +142,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        if args.output and (args.output.resolve() == args.input.resolve() or
+                            (args.output.exists() and args.output.samefile(args.input))):
+            raise ValueError("KPI output must not replace the input CSV.")
         result = summarize_csv(args.input)
         payload = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
         if args.output:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(payload, encoding="utf-8")
+            write_summary(args.output, payload)
         else:
             print(payload, end="")
     except (OSError, UnicodeError, ValueError, csv.Error) as exc:
